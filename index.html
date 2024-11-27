@@ -134,10 +134,11 @@
 
     <div class="game-container">
         <!-- 玩家输入名字 -->
-        <div class="input-container">
+        <div class="input-container" id="nameInputContainer">
             <label for="playerName">Enter Your Name:</label>
             <input type="text" id="playerName" placeholder="Your Name" />
         </div>
+        <h2 id="welcomeMessage" style="display: none;">Welcome, Player!</h2>
         <!-- 玩家手牌 -->
         <h2>Your Cards</h2>
         <div class="cards" id="playerCards"></div>
@@ -243,6 +244,15 @@
             const playerScore = calculateScore(playerHand);
             const dealerScore = calculateScore(dealerHand);
 
+            // 5龙规则判定
+            if (playerHand.length === 5 && playerScore <= 21) {
+                return 'Player wins with Five Dragon rule!';
+            }
+            if (dealerHand.length === 5 && dealerScore <= 21) {
+                return 'Dealer wins with Five Dragon rule!';
+            }
+
+            // 普通规则判定
             if (playerScore > 21) {
                 dealerWins++;
                 return 'Dealer wins (Player busted)';
@@ -265,8 +275,12 @@
         function startRound() {
             const playerNameInput = document.getElementById('playerName');
             const playerName = playerNameInput.value || 'Player';
+
             if (playerNameInput.disabled === false) {
                 playerNameInput.disabled = true; // 锁定名字
+                document.getElementById('nameInputContainer').style.display = 'none';
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${playerName}!`;
+                document.getElementById('welcomeMessage').style.display = 'block';
             }
 
             document.getElementById('startRound').style.display = 'none';
@@ -277,6 +291,7 @@
             renderDealerHand(true);
             renderHand(playerHand, 'playerCards');
             document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
+            document.getElementById('dealerScore').textContent = 'Dealer Score: ???';
         }
 
         function hit() {
@@ -340,6 +355,8 @@
                 updateRecordList();
                 document.getElementById('playerName').disabled = false; // 解锁名字输入框
                 document.getElementById('playerName').value = ''; // 清空名字
+                document.getElementById('welcomeMessage').style.display = 'none';
+                document.getElementById('nameInputContainer').style.display = 'block';
             }
         }
 
