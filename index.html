@@ -3,78 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>21 Point Game</title>
+    <title>21 Point Game - Optimized</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px;
-            background-color: #1a1a1a;
+            background: linear-gradient(120deg, #1e3c72, #2a5298);
             color: white;
         }
 
-        #gameBoard {
-            margin: 20px auto;
-            width: 350px;
-            border: 2px solid white;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
+        .game-container {
+            margin: auto;
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
         }
 
         .card {
-            display: inline-block;
             width: 60px;
             height: 80px;
-            border: 1px solid white;
-            margin: 5px;
-            background-color: white;
+            background: white;
             color: black;
-            text-align: center;
-            line-height: 80px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 18px;
             font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.5);
         }
 
         button {
-            margin: 10px;
             padding: 10px 20px;
+            margin: 10px;
             font-size: 16px;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            border-radius: 10px;
-            transition: background-color 0.3s ease;
+            background-color: #4caf50;
+            color: white;
         }
 
         button:hover {
-            background-color: #4caf50;
-            color: white;
+            background-color: #45a049;
+        }
+
+        .scoreboard {
+            margin: 20px 0;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                width: 50px;
+                height: 70px;
+                font-size: 14px;
+            }
+            button {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <h1>21 Point Game</h1>
-    <div id="gameBoard">
-        <div id="playerHand">
-            <h3>Your Hand</h3>
-            <div id="playerCards"></div>
-            <p id="playerScore">Score: 0</p>
-        </div>
-        <div id="dealerHand">
-            <h3>Dealer's Hand</h3>
-            <div id="dealerCards"></div>
-            <p id="dealerScore">Score: 0</p>
-        </div>
+    <div class="game-container">
+        <div class="scoreboard" id="scoreboard">Wins: 0 | Losses: 0 | Win Rate: 0%</div>
+        <div class="cards" id="playerCards"></div>
+        <p id="playerScore">Player Score: 0</p>
+        <div class="cards" id="dealerCards"></div>
+        <p id="dealerScore">Dealer Score: 0</p>
         <button onclick="hit()">Hit</button>
         <button onclick="stand()">Stand</button>
     </div>
     <script>
+        // Game Variables
         const suits = ['♠', '♥', '♣', '♦'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let deck = [];
         let playerHand = [];
         let dealerHand = [];
+        let wins = 0, losses = 0;
 
+        // Initialize Game
         function createDeck() {
             deck = [];
             for (let suit of suits) {
@@ -116,12 +140,24 @@
             }
         }
 
+        function updateScoreboard() {
+            const winRate = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(2) : 0;
+            document.getElementById('scoreboard').textContent = `Wins: ${wins} | Losses: ${losses} | Win Rate: ${winRate}%`;
+            localStorage.setItem('wins', wins);
+            localStorage.setItem('losses', losses);
+        }
+
         function hit() {
             playerHand.push(deck.pop());
             renderHand(playerHand, 'playerCards');
-            document.getElementById('playerScore').textContent = `Score: ${calculateScore(playerHand)}`;
+            document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
             if (calculateScore(playerHand) > 21) {
                 alert('You busted! Dealer wins.');
+                losses++;
+                resetGame();
+            } else if (playerHand.length === 5 && calculateScore(playerHand) <= 21) {
+                alert('Five Card Charlie! You win!');
+                wins++;
                 resetGame();
             }
         }
@@ -131,13 +167,16 @@
                 dealerHand.push(deck.pop());
             }
             renderHand(dealerHand, 'dealerCards');
-            document.getElementById('dealerScore').textContent = `Score: ${calculateScore(dealerHand)}`;
+            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
             const playerScore = calculateScore(playerHand);
             const dealerScore = calculateScore(dealerHand);
+
             if (dealerScore > 21 || playerScore > dealerScore) {
                 alert('You win!');
+                wins++;
             } else if (playerScore < dealerScore) {
                 alert('Dealer wins!');
+                losses++;
             } else {
                 alert("It's a tie!");
             }
@@ -150,10 +189,19 @@
             dealerHand = [deck.pop()];
             renderHand(playerHand, 'playerCards');
             renderHand(dealerHand, 'dealerCards');
-            document.getElementById('playerScore').textContent = `Score: ${calculateScore(playerHand)}`;
-            document.getElementById('dealerScore').textContent = `Score: ${calculateScore(dealerHand)}`;
+            document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
+            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
+            updateScoreboard();
         }
 
+        function loadGameData() {
+            wins = parseInt(localStorage.getItem('wins')) || 0;
+            losses = parseInt(localStorage.getItem('losses')) || 0;
+            updateScoreboard();
+        }
+
+        // Start Game
+        loadGameData();
         createDeck();
         resetGame();
     </script>
