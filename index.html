@@ -126,17 +126,28 @@
 
     <!-- 游戏容器 -->
     <div class="game-container">
-        <h1>21 Point Game</h1>
+        <!-- 电脑手牌 -->
+        <h2>Dealer's Cards</h2>
+        <div class="cards" id="dealerCards"></div>
+        <p id="dealerScore">Dealer Score: Hidden</p>
+    </div>
+
+    <div class="game-container">
+        <!-- 玩家输入名字 -->
         <div class="input-container">
             <label for="playerName">Enter Your Name:</label>
             <input type="text" id="playerName" placeholder="Your Name" />
         </div>
+        <!-- 玩家手牌 -->
+        <h2>Your Cards</h2>
         <div class="cards" id="playerCards"></div>
-        <p id="playerScore">Player Score: 0</p>
-        <div class="cards" id="dealerCards"></div>
-        <p id="dealerScore">Dealer Score: 0</p>
-        <button onclick="hit()">Hit</button>
-        <button onclick="stand()">Stand</button>
+        <p id="playerScore">Your Score: 0</p>
+        <!-- 按钮区域 -->
+        <button id="startRound" onclick="startRound()">Start Round</button>
+        <div id="actionButtons" style="display: none;">
+            <button onclick="hit()">Hit</button>
+            <button onclick="stand()">Stand</button>
+        </div>
     </div>
 
     <!-- 游戏记录 -->
@@ -165,8 +176,6 @@
         let playerWins = 0; // 玩家胜局数
         let dealerWins = 0; // 电脑胜局数
         let currentRound = 1; // 当前局数
-
-        const cardSound = new Audio('https://www.soundjay.com/button/beep-07.mp3'); // 抽牌音效
 
         function createDeck() {
             deck = [];
@@ -253,11 +262,22 @@
             return 'Draw';
         }
 
+        function startRound() {
+            document.getElementById('startRound').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'block';
+            createDeck();
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            renderHand(playerHand, 'playerCards');
+            renderHand(dealerHand, 'dealerCards');
+            document.getElementById('dealerScore').textContent = 'Dealer Score: ???';
+            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
+        }
+
         function hit() {
-            cardSound.play(); // 播放音效
             playerHand.push(deck.pop());
             renderHand(playerHand, 'playerCards');
-            document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
+            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
             if (calculateScore(playerHand) > 21) {
                 endGame(determineWinner());
             }
@@ -265,7 +285,6 @@
 
         function stand() {
             while (calculateScore(dealerHand) < 17) {
-                cardSound.play(); // 播放音效
                 dealerHand.push(deck.pop());
             }
             renderHand(dealerHand, 'dealerCards');
@@ -276,11 +295,12 @@
         function endGame(result) {
             recordGame(result);
             currentRound++;
+            document.getElementById('actionButtons').style.display = 'none';
             if (currentRound > 5) {
                 alert(`Game Over! Final Results: Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`);
                 resetGame(true);
             } else {
-                resetGame();
+                document.getElementById('startRound').style.display = 'block';
             }
         }
 
@@ -292,13 +312,6 @@
                 records = [];
                 updateRecordList();
             }
-            createDeck();
-            playerHand = [deck.pop(), deck.pop()];
-            dealerHand = [deck.pop(), deck.pop()];
-            renderHand(playerHand, 'playerCards');
-            renderHand(dealerHand, 'dealerCards');
-            document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
-            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
         }
 
         function renderHand(hand, containerId) {
@@ -313,7 +326,6 @@
         }
 
         createDeck();
-        resetGame();
     </script>
 </body>
 </html>
