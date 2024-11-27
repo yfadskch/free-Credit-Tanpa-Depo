@@ -69,49 +69,6 @@
             background-color: #45a049;
         }
 
-        select, input {
-            margin: 20px 0;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .input-container label {
-            font-size: 14px;
-            color: #ffffff;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .input-container input {
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            width: 80%;
-            max-width: 300px;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        #recordList {
-            font-size: 14px;
-            line-height: 1.4;
-            text-align: left;
-        }
-
-        @media (max-width: 768px) {
-            .card {
-                width: 50px;
-                height: 70px;
-                font-size: 14px;
-            }
-            button {
-                font-size: 14px;
-            }
-        }
-
         .end-game-message {
             margin-top: 20px;
             padding: 20px;
@@ -120,6 +77,21 @@
             color: #fff;
             font-size: 18px;
             line-height: 1.6;
+        }
+
+        .end-game-message button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .end-game-message button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -159,15 +131,6 @@
     <div id="endGameMessage" class="end-game-message" style="display: none;"></div>
 
     <script>
-        // 背景切换功能
-        function changeGIFBackground() {
-            const selector = document.getElementById('gifSelector');
-            const selectedGIF = selector.value;
-            if (selectedGIF) {
-                document.body.style.backgroundImage = `url('${selectedGIF}')`;
-            }
-        }
-
         const suits = ['♠', '♥', '♣', '♦'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let deck = [];
@@ -202,6 +165,10 @@
             document.getElementById('startRound').style.display = 'block';
         }
 
+        function reply() {
+            alert("Reply functionality triggered!");
+        }
+
         function endGame(result) {
             recordGame(result);
             document.getElementById('actionButtons').style.display = 'none';
@@ -211,7 +178,29 @@
             endGameMessage.innerHTML = `
                 <h3>${message}</h3>
                 <button onclick="resetGame()">Restart Game</button>
+                <button onclick="reply()">Reply</button>
             `;
+        }
+
+        function recordGame(result) {
+            const playerName = document.getElementById('playerName').value || 'Player';
+            const playerCards = playerHand.map(card => `${card.value}${card.suit}`).join(', ');
+            const dealerCards = dealerHand.map(card => `${card.value}${card.suit}`).join(', ');
+            records.push({
+                round: currentRound,
+                playerName,
+                playerCards,
+                dealerCards,
+                result
+            });
+            updateRecordList();
+        }
+
+        function updateRecordList() {
+            const recordList = document.getElementById('recordList');
+            recordList.innerHTML = records.map(record => `
+                Round ${record.round}: ${record.playerName} drew [${record.playerCards}] (${record.result}); Dealer drew [${record.dealerCards}]
+            `).join('<br>');
         }
 
         createDeck();
