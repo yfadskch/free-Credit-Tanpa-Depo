@@ -129,7 +129,7 @@
         <!-- 电脑手牌 -->
         <h2>Dealer's Cards</h2>
         <div class="cards" id="dealerCards"></div>
-        <p id="dealerScore">Dealer Score: Hidden</p>
+        <p id="dealerScore">Dealer Score: ???</p>
     </div>
 
     <div class="game-container">
@@ -263,14 +263,19 @@
         }
 
         function startRound() {
+            const playerNameInput = document.getElementById('playerName');
+            const playerName = playerNameInput.value || 'Player';
+            if (playerNameInput.disabled === false) {
+                playerNameInput.disabled = true; // 锁定名字
+            }
+
             document.getElementById('startRound').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'block';
             createDeck();
             playerHand = [deck.pop(), deck.pop()];
             dealerHand = [deck.pop(), deck.pop()];
+            renderDealerHand(true);
             renderHand(playerHand, 'playerCards');
-            renderHand(dealerHand, 'dealerCards');
-            document.getElementById('dealerScore').textContent = 'Dealer Score: ???';
             document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
         }
 
@@ -287,9 +292,31 @@
             while (calculateScore(dealerHand) < 17) {
                 dealerHand.push(deck.pop());
             }
-            renderHand(dealerHand, 'dealerCards');
+            renderDealerHand(false); // 展示所有电脑手牌
             document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
             endGame(determineWinner());
+        }
+
+        function renderDealerHand(hidden = true) {
+            const dealerHandContainer = document.getElementById('dealerCards');
+            dealerHandContainer.innerHTML = '';
+            dealerHand.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.textContent = hidden && index > 0 ? '🂠' : `${card.value}${card.suit}`;
+                dealerHandContainer.appendChild(cardDiv);
+            });
+        }
+
+        function renderHand(hand, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            hand.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.textContent = `${card.value}${card.suit}`;
+                container.appendChild(cardDiv);
+            });
         }
 
         function endGame(result) {
@@ -311,18 +338,9 @@
                 dealerWins = 0;
                 records = [];
                 updateRecordList();
+                document.getElementById('playerName').disabled = false; // 解锁名字输入框
+                document.getElementById('playerName').value = ''; // 清空名字
             }
-        }
-
-        function renderHand(hand, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            hand.forEach(card => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
-                cardDiv.textContent = `${card.value}${card.suit}`;
-                container.appendChild(cardDiv);
-            });
         }
 
         createDeck();
