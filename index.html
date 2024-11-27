@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>21 Point Game - Enhanced</title>
     <style>
-        /* 背景与通用样式 */
         body {
             background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif');
             background-size: cover;
@@ -151,32 +150,108 @@
             deck.sort(() => Math.random() - 0.5);
         }
 
-        function resetGame() {
-            currentRound = 1;
-            playerWins = 0;
-            dealerWins = 0;
-            records = [];
-            document.getElementById('recordList').innerHTML = '';
-            document.getElementById('playerName').value = '';
-            document.getElementById('playerName').disabled = false;
-            document.getElementById('welcomeMessage').style.display = 'none';
-            document.getElementById('nameInputContainer').style.display = 'block';
-            document.getElementById('endGameMessage').style.display = 'none';
-            document.getElementById('startRound').style.display = 'block';
+        function startRound() {
+            const playerNameInput = document.getElementById('playerName');
+            const playerName = playerNameInput.value || 'Player';
+
+            if (!playerNameInput.disabled) {
+                playerNameInput.disabled = true;
+                document.getElementById('nameInputContainer').style.display = 'none';
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${playerName}!`;
+                document.getElementById('welcomeMessage').style.display = 'block';
+            }
+
+            createDeck();
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            renderDealerHand(true);
+            renderHand(playerHand, 'playerCards');
+            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
+            document.getElementById('dealerScore').textContent = 'Dealer Score: ???';
+            document.getElementById('startRound').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'block';
         }
 
-        function reply() {
-            alert("Reply functionality triggered!");
+        function calculateScore(hand) {
+            let score = 0;
+            let aces = 0;
+            for (let card of hand) {
+                if (card.value === 'A') {
+                    score += 11;
+                    aces++;
+                } else if (['J', 'Q', 'K'].includes(card.value)) {
+                    score += 10;
+                } else {
+                    score += parseInt(card.value);
+                }
+            }
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces--;
+            }
+            return score;
+        }
+
+        function hit() {
+            playerHand.push(deck.pop());
+            renderHand(playerHand, 'playerCards');
+            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
+            if (calculateScore(playerHand) > 21) {
+                endGame('Dealer wins (Player busted)');
+            }
+        }
+
+        function stand() {
+            while (calculateScore(dealerHand) < 17) {
+                dealerHand.push(deck.pop());
+            }
+            renderDealerHand(false);
+            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
+            const winner = determineWinner();
+            endGame(winner);
+        }
+
+        function renderDealerHand(hidden = true) {
+            const dealerHandContainer = document.getElementById('dealerCards');
+            dealerHandContainer.innerHTML = '';
+            dealerHand.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.textContent = hidden && index > 0 ? '🂠' : `${card.value}${card.suit}`;
+                dealerHandContainer.appendChild(cardDiv);
+            });
+        }
+
+        function renderHand(hand, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            hand.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.textContent = `${card.value}${card.suit}`;
+                container.appendChild(cardDiv);
+            });
+        }
+
+        function determineWinner() {
+            const playerScore = calculateScore(playerHand);
+            const dealerScore = calculateScore(dealerHand);
+
+            if (playerHand.length === 5 && playerScore <= 21) return 'Player wins with Five Dragon rule!';
+            if (dealerHand.length === 5 && dealerScore <= 21) return 'Dealer wins with Five Dragon rule!';
+            if (playerScore > 21) return 'Dealer wins (Player busted)';
+            if (dealerScore > 21) return 'Player wins (Dealer busted)';
+            if (playerScore > dealerScore) return 'Player wins';
+            if (playerScore < dealerScore) return 'Dealer wins';
+            return 'Draw';
         }
 
         function endGame(result) {
             recordGame(result);
             document.getElementById('actionButtons').style.display = 'none';
-            const message = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
-            const endGameMessage = document.getElementById('endGameMessage');
-            endGameMessage.style.display = 'block';
-            endGameMessage.innerHTML = `
-                <h3>${message}</h3>
+            document.getElementById('endGameMessage').style.display = 'block';
+            document.getElementById('endGameMessage').innerHTML = `
+                <h3>${result}</h3>
                 <button onclick="resetGame()">Restart Game</button>
                 <button onclick="reply()">Reply</button>
             `;
@@ -193,14 +268,33 @@
                 dealerCards,
                 result
             });
+            currentRound++;
             updateRecordList();
         }
 
         function updateRecordList() {
             const recordList = document.getElementById('recordList');
             recordList.innerHTML = records.map(record => `
-                Round ${record.round}: ${record.playerName} drew [${record.playerCards}] (${record.result}); Dealer drew [${record.dealerCards}]
+                Round ${record.round}: ${record.playerName} drew [${record.playerCards}], Dealer drew [${record.dealerCards}], Result: ${record.result}
             `).join('<br>');
+        }
+
+        function resetGame() {
+            currentRound = 1;
+            playerWins = 0;
+            dealerWins = 0;
+            records = [];
+            document.getElementById('recordList').innerHTML = '';
+            document.getElementById('playerName').disabled = false;
+            document.getElementById('playerName').value = '';
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('nameInputContainer').style.display = 'block';
+            document.getElementById('endGameMessage').style.display = 'none';
+            document.getElementById('startRound').style.display = 'block';
+        }
+
+        function reply() {
+            alert('Reply button clicked!');
         }
 
         createDeck();
