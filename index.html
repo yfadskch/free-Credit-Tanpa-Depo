@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>21 Point Game - Enhanced</title>
     <style>
-        /* 默认 GIF 背景 */
+        /* 背景与通用样式 */
         body {
             background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif');
             background-size: cover;
@@ -16,7 +16,6 @@
             color: white;
         }
 
-        /* 游戏容器样式 */
         .game-container {
             background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
@@ -47,6 +46,12 @@
             font-weight: bold;
             border-radius: 4px;
             box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.5);
+            transform: scale(1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: scale(1.1);
         }
 
         button {
@@ -73,6 +78,29 @@
             cursor: pointer;
         }
 
+        .input-container label {
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-container input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        #recordList {
+            font-size: 14px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
         @media (max-width: 768px) {
             .card {
                 width: 50px;
@@ -89,17 +117,20 @@
     <!-- 背景选择器 -->
     <div>
         <select id="gifSelector" onchange="changeGIFBackground()">
-            <option value="">选择背景</option>
-            <option value="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif">默认背景</option>
-            <option value="https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif">背景 1</option>
-            <option value="https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif">背景 2</option>
+            <option value="">Select Background</option>
+            <option value="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif">Default Background</option>
+            <option value="https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif">Background 1</option>
+            <option value="https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif">Background 2</option>
         </select>
     </div>
 
     <!-- 游戏容器 -->
     <div class="game-container">
         <h1>21 Point Game</h1>
-        <input type="text" id="playerName" placeholder="Enter your name" />
+        <div class="input-container">
+            <label for="playerName">Enter Your Name:</label>
+            <input type="text" id="playerName" placeholder="Your Name" />
+        </div>
         <div class="cards" id="playerCards"></div>
         <p id="playerScore">Player Score: 0</p>
         <div class="cards" id="dealerCards"></div>
@@ -134,6 +165,8 @@
         let playerWins = 0; // 玩家胜局数
         let dealerWins = 0; // 电脑胜局数
         let currentRound = 1; // 当前局数
+
+        const cardSound = new Audio('https://www.soundjay.com/button/beep-07.mp3'); // 抽牌音效
 
         function createDeck() {
             deck = [];
@@ -192,7 +225,7 @@
             recordList.innerHTML = records
                 .map(
                     record =>
-                        `第 ${record.round} 局 (${record.time}): ${record.playerName} 抽到 [${record.playerCards}]，得分 ${record.playerScore} (${record.result})；电脑抽到 [${record.dealerCards}]，得分 ${record.dealerScore}`
+                        `Round ${record.round} (${record.time}): ${record.playerName} drew [${record.playerCards}], scored ${record.playerScore} (${record.result}); Dealer drew [${record.dealerCards}], scored ${record.dealerScore}`
                 )
                 .join('<br>');
         }
@@ -221,6 +254,7 @@
         }
 
         function hit() {
+            cardSound.play(); // 播放音效
             playerHand.push(deck.pop());
             renderHand(playerHand, 'playerCards');
             document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
@@ -231,6 +265,7 @@
 
         function stand() {
             while (calculateScore(dealerHand) < 17) {
+                cardSound.play(); // 播放音效
                 dealerHand.push(deck.pop());
             }
             renderHand(dealerHand, 'dealerCards');
@@ -242,7 +277,7 @@
             recordGame(result);
             currentRound++;
             if (currentRound > 5) {
-                alert(`游戏结束！最终结果：玩家胜利 ${playerWins} 次，电脑胜利 ${dealerWins} 次。`);
+                alert(`Game Over! Final Results: Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`);
                 resetGame(true);
             } else {
                 resetGame();
