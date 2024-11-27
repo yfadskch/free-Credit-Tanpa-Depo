@@ -49,13 +49,14 @@
 
         button {
             padding: 10px 20px;
-            margin: 10px;
+            margin: 10px auto;
             font-size: 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             background-color: #4caf50;
             color: white;
+            display: block;
         }
 
         button:hover {
@@ -70,21 +71,16 @@
             color: #fff;
             font-size: 18px;
             line-height: 1.6;
+            text-align: center;
         }
 
-        .end-game-message button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
+        .end-game-message a {
+            color: #ffdd00;
+            text-decoration: none;
         }
 
-        .end-game-message button:hover {
-            background-color: #0056b3;
+        .end-game-message a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -262,6 +258,7 @@
                 const finalMessage = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
                 document.getElementById('endGameMessage').innerHTML = `
                     <h3>${finalMessage}</h3>
+                    <p><strong>Free 3 <a href="https://klking88.com" target="_blank">klking88.com</a></strong></p>
                     <button onclick="resetGame()">Restart Game</button>
                 `;
                 document.getElementById('endGameMessage').style.display = 'block';
