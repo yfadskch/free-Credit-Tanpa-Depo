@@ -63,6 +63,22 @@
             background-color: #45a049;
         }
 
+        .highlight-link {
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffdd00;
+        }
+
+        .highlight-link a {
+            color: #ffdd00;
+            text-decoration: none;
+        }
+
+        .highlight-link a:hover {
+            text-decoration: underline;
+        }
+
         .end-game-message {
             margin-top: 20px;
             padding: 20px;
@@ -72,15 +88,6 @@
             font-size: 18px;
             line-height: 1.6;
             text-align: center;
-        }
-
-        .end-game-message a {
-            color: #ffdd00;
-            text-decoration: none;
-        }
-
-        .end-game-message a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -105,6 +112,11 @@
             <button onclick="hit()">Hit</button>
             <button onclick="stand()">Stand</button>
         </div>
+    </div>
+
+    <!-- Free 3 klking88.com 链接 -->
+    <div class="game-container highlight-link">
+        <p>Free 3 <a href="https://klking88.com" target="_blank">klking88.com</a></p>
     </div>
 
     <div id="gameRecords" class="game-container">
@@ -258,7 +270,6 @@
                 const finalMessage = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
                 document.getElementById('endGameMessage').innerHTML = `
                     <h3>${finalMessage}</h3>
-                    <p><strong>Free 3 <a href="https://klking88.com" target="_blank">klking88.com</a></strong></p>
                     <button onclick="resetGame()">Restart Game</button>
                 `;
                 document.getElementById('endGameMessage').style.display = 'block';
