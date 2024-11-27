@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>21 Point Game - Optimized</title>
+    <title>21 Point Game with GIF Background</title>
     <style>
+        /* 背景样式 */
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+            background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTQ3bm95N2tjaHcyNTh5aDVpODR3enU4NzV1ZzMzcDJvcndvb2I4biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kkRxJkiFDRbvMLwLtA/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(120deg, #1e3c72, #2a5298);
+            font-family: Arial, sans-serif;
             color: white;
         }
 
+        /* 游戏容器样式 */
         .game-container {
-            margin: auto;
-            max-width: 600px;
             background-color: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
         }
 
         .cards {
             display: flex;
             justify-content: center;
-            flex-wrap: wrap;
             margin: 20px 0;
+            flex-wrap: wrap;
         }
 
         .card {
@@ -60,10 +64,13 @@
             background-color: #45a049;
         }
 
-        .scoreboard {
+        select {
             margin: 20px 0;
-            text-align: left;
+            padding: 10px;
             font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
         }
 
         @media (max-width: 768px) {
@@ -79,9 +86,19 @@
     </style>
 </head>
 <body>
-    <h1>21 Point Game</h1>
+    <!-- 背景选择器 -->
+    <div>
+        <select id="gifSelector" onchange="changeGIFBackground()">
+            <option value="">选择背景</option>
+            <option value="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTQ3bm95N2tjaHcyNTh5aDVpODR3enU4NzV1ZzMzcDJvcndvb2I4biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kkRxJkiFDRbvMLwLtA/giphy.gif">默认背景</option>
+            <option value="https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif">背景 1</option>
+            <option value="https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif">背景 2</option>
+        </select>
+    </div>
+
+    <!-- 游戏容器 -->
     <div class="game-container">
-        <div class="scoreboard" id="scoreboard">Wins: 0 | Losses: 0 | Win Rate: 0%</div>
+        <h1>21 Point Game</h1>
         <div class="cards" id="playerCards"></div>
         <p id="playerScore">Player Score: 0</p>
         <div class="cards" id="dealerCards"></div>
@@ -89,16 +106,24 @@
         <button onclick="hit()">Hit</button>
         <button onclick="stand()">Stand</button>
     </div>
+
     <script>
-        // Game Variables
+        // 背景切换功能
+        function changeGIFBackground() {
+            const selector = document.getElementById('gifSelector');
+            const selectedGIF = selector.value;
+            if (selectedGIF) {
+                document.body.style.backgroundImage = `url('${selectedGIF}')`;
+            }
+        }
+
+        // 21 点游戏逻辑
         const suits = ['♠', '♥', '♣', '♦'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let deck = [];
         let playerHand = [];
         let dealerHand = [];
-        let wins = 0, losses = 0;
 
-        // Initialize Game
         function createDeck() {
             deck = [];
             for (let suit of suits) {
@@ -140,24 +165,12 @@
             }
         }
 
-        function updateScoreboard() {
-            const winRate = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(2) : 0;
-            document.getElementById('scoreboard').textContent = `Wins: ${wins} | Losses: ${losses} | Win Rate: ${winRate}%`;
-            localStorage.setItem('wins', wins);
-            localStorage.setItem('losses', losses);
-        }
-
         function hit() {
             playerHand.push(deck.pop());
             renderHand(playerHand, 'playerCards');
             document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
             if (calculateScore(playerHand) > 21) {
                 alert('You busted! Dealer wins.');
-                losses++;
-                resetGame();
-            } else if (playerHand.length === 5 && calculateScore(playerHand) <= 21) {
-                alert('Five Card Charlie! You win!');
-                wins++;
                 resetGame();
             }
         }
@@ -173,10 +186,8 @@
 
             if (dealerScore > 21 || playerScore > dealerScore) {
                 alert('You win!');
-                wins++;
             } else if (playerScore < dealerScore) {
                 alert('Dealer wins!');
-                losses++;
             } else {
                 alert("It's a tie!");
             }
@@ -191,17 +202,8 @@
             renderHand(dealerHand, 'dealerCards');
             document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
             document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
-            updateScoreboard();
         }
 
-        function loadGameData() {
-            wins = parseInt(localStorage.getItem('wins')) || 0;
-            losses = parseInt(localStorage.getItem('losses')) || 0;
-            updateScoreboard();
-        }
-
-        // Start Game
-        loadGameData();
         createDeck();
         resetGame();
     </script>
