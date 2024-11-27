@@ -5,178 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>21 Point Game - Enhanced</title>
     <style>
+        /* 基础样式 */
         body {
-            background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
             margin: 0;
             font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #141E30, #243B55); /* 渐变背景 */
             color: white;
+            text-align: center;
         }
 
         .game-container {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
             padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .cards {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
+        /* 卡牌样式 */
         .card {
-            width: 60px;
-            height: 80px;
+            width: 80px;
+            height: 120px;
+            margin: 10px;
             background: white;
             color: black;
-            margin: 5px;
-            display: flex;
-            align-items: center;
+            font-size: 20px;
+            border-radius: 8px;
+            display: inline-flex;
             justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 4px;
-            box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.5);
+            align-items: center;
+            box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
+            transform: scale(1);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
 
+        .card:hover {
+            transform: scale(1.1);
+            box-shadow: 4px 8px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 按钮样式 */
         button {
-            padding: 10px 20px;
-            margin: 10px auto;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #4caf50;
+            background: linear-gradient(to right, #4CAF50, #2ECC71);
             color: white;
-            display: block;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         button:hover {
-            background-color: #45a049;
+            transform: scale(1.1);
+            background: linear-gradient(to right, #3e8e41, #27AE60);
         }
 
-        .highlight-link {
-            margin: 20px auto;
+        /* 游戏记录样式 */
+        .game-records {
+            font-size: 16px;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        /* 提示文字样式 */
+        .highlight {
             font-size: 20px;
+            margin: 20px 0;
             font-weight: bold;
-            text-align: center;
             color: #ffdd00;
         }
-
-        .highlight-link a {
+        .highlight a {
             color: #ffdd00;
             text-decoration: none;
-        }
-
-        .highlight-link a:hover {
-            text-decoration: underline;
-        }
-
-        .end-game-message {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: rgba(0, 128, 0, 0.8);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 18px;
-            line-height: 1.6;
-            text-align: center;
         }
     </style>
 </head>
 <body>
+    <!-- 游戏欢迎区 -->
     <div class="game-container">
+        <h1>Welcome to 21 Point Game</h1>
+        <p id="welcomeMessage">Enter your name to start:</p>
+        <input type="text" id="playerName" placeholder="Enter your name">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- 游戏区 -->
+    <div class="game-container" id="gameArea" style="display: none;">
         <h2>Dealer's Cards</h2>
-        <div class="cards" id="dealerCards"></div>
-        <p id="dealerScore">Dealer Score: ???</p>
-    </div>
-
-    <div class="game-container">
-        <div class="input-container" id="nameInputContainer">
-            <label for="playerName">Enter Your Name:</label>
-            <input type="text" id="playerName" placeholder="Your Name" />
-        </div>
-        <h2 id="welcomeMessage" style="display: none;">Welcome, Player!</h2>
+        <div id="dealerCards"></div>
         <h2>Your Cards</h2>
-        <div class="cards" id="playerCards"></div>
-        <p id="playerScore">Your Score: 0</p>
-        <button id="startRound" onclick="startRound()">Start Round</button>
-        <div id="actionButtons" style="display: none;">
-            <button onclick="hit()">Hit</button>
-            <button onclick="stand()">Stand</button>
-        </div>
+        <div id="playerCards"></div>
+        <button onclick="hit()">Hit</button>
+        <button onclick="stand()">Stand</button>
+        <p id="statusMessage"></p>
     </div>
 
-    <!-- Free Credit Tanpa Deposit 链接 -->
-    <div class="highlight-link">
-        <p>Free Credit <a href="https://klking88.com" target="_blank">Tanpa Deposit</a></p>
+    <!-- Free Credit 链接 -->
+    <div class="highlight">
+        Free Credit <a href="https://klking88.com" target="_blank">Tanpa Deposit</a>
     </div>
 
-    <div id="gameRecords" class="game-container">
+    <!-- 游戏记录区 -->
+    <div class="game-container" id="gameRecords" style="display: none;">
         <h2>Game Records</h2>
         <ul id="recordList"></ul>
     </div>
 
-    <div id="endGameMessage" class="end-game-message" style="display: none;"></div>
-
     <script>
-        const suits = ['♠', '♥', '♣', '♦'];
-        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        let deck = [];
+        // 游戏变量
+        let playerName = '';
         let playerHand = [];
         let dealerHand = [];
-        let records = [];
-        let playerWins = 0;
-        let dealerWins = 0;
+        let deck = [];
+        let playerScore = 0;
+        let dealerScore = 0;
         let currentRound = 1;
         const maxRounds = 5;
 
+        // 创建扑克牌
         function createDeck() {
+            const suits = ['♠', '♥', '♣', '♦'];
+            const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
             deck = [];
             for (let suit of suits) {
                 for (let value of values) {
                     deck.push({ suit, value });
                 }
             }
-            deck.sort(() => Math.random() - 0.5);
+            deck.sort(() => Math.random() - 0.5); // 随机排序
         }
 
-        function startRound() {
-            if (currentRound > maxRounds) {
-                alert(`Game Over! Final Results: Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`);
-                resetGame();
-                return;
-            }
-
-            const playerNameInput = document.getElementById('playerName');
-            const playerName = playerNameInput.value || 'Player';
-
-            if (!playerNameInput.disabled) {
-                playerNameInput.disabled = true;
-                document.getElementById('nameInputContainer').style.display = 'none';
-                document.getElementById('welcomeMessage').textContent = `Welcome, ${playerName}!`;
-                document.getElementById('welcomeMessage').style.display = 'block';
-            }
-
+        // 启动游戏
+        function startGame() {
+            playerName = document.getElementById('playerName').value || 'Player';
+            document.getElementById('welcomeMessage').innerText = `Good luck, ${playerName}!`;
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('gameRecords').style.display = 'block';
             createDeck();
+            startRound();
+        }
+
+        // 开始新一轮
+        function startRound() {
             playerHand = [deck.pop(), deck.pop()];
             dealerHand = [deck.pop(), deck.pop()];
-            renderDealerHand(true);
-            renderHand(playerHand, 'playerCards');
-            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
-            document.getElementById('dealerScore').textContent = 'Dealer Score: ???';
-            document.getElementById('startRound').style.display = 'none';
-            document.getElementById('actionButtons').style.display = 'block';
+            renderHands();
+            updateScores();
         }
 
+        // 渲染卡牌
+        function renderHands() {
+            document.getElementById('playerCards').innerHTML = playerHand
+                .map(card => `<div class="card">${card.value}${card.suit}</div>`)
+                .join('');
+            document.getElementById('dealerCards').innerHTML = dealerHand
+                .map(card => `<div class="card">${card.value}${card.suit}</div>`)
+                .join('');
+        }
+
+        // 计算分数
         function calculateScore(hand) {
             let score = 0;
             let aces = 0;
@@ -197,125 +186,72 @@
             return score;
         }
 
+        // 更新分数
+        function updateScores() {
+            playerScore = calculateScore(playerHand);
+            dealerScore = calculateScore(dealerHand);
+            document.getElementById('statusMessage').innerText = `Your Score: ${playerScore}`;
+        }
+
+        // 玩家抽牌
         function hit() {
             playerHand.push(deck.pop());
-            renderHand(playerHand, 'playerCards');
-            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
-            if (calculateScore(playerHand) > 21) {
-                endGame('Dealer wins (Player busted)');
+            renderHands();
+            updateScores();
+            if (playerScore > 21) {
+                endRound('Dealer wins (Player busted)');
             }
         }
 
+        // 玩家停牌
         function stand() {
-            while (calculateScore(dealerHand) < 17) {
+            while (dealerScore < 17) {
                 dealerHand.push(deck.pop());
+                dealerScore = calculateScore(dealerHand);
             }
-            renderDealerHand(false);
-            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
-            const winner = determineWinner();
-            endGame(winner);
+            renderHands();
+            endRound(determineWinner());
         }
 
-        function renderDealerHand(hidden = true) {
-            const dealerHandContainer = document.getElementById('dealerCards');
-            dealerHandContainer.innerHTML = '';
-            dealerHand.forEach((card, index) => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
-                cardDiv.textContent = hidden && index > 0 ? '🂠' : `${card.value}${card.suit}`;
-                dealerHandContainer.appendChild(cardDiv);
-            });
-        }
-
-        function renderHand(hand, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            hand.forEach(card => {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card';
-                cardDiv.textContent = `${card.value}${card.suit}`;
-                container.appendChild(cardDiv);
-            });
-        }
-
+        // 确定胜利者
         function determineWinner() {
-            const playerScore = calculateScore(playerHand);
-            const dealerScore = calculateScore(dealerHand);
-
             if (playerHand.length === 5 && playerScore <= 21) return 'Player wins with Five Dragon rule!';
             if (dealerHand.length === 5 && dealerScore <= 21) return 'Dealer wins with Five Dragon rule!';
-            if (playerScore > 21) {
-                dealerWins++;
-                return 'Dealer wins (Player busted)';
-            }
-            if (dealerScore > 21) {
-                playerWins++;
-                return 'Player wins (Dealer busted)';
-            }
-            if (playerScore > dealerScore) {
-                playerWins++;
-                return 'Player wins';
-            }
-            if (playerScore < dealerScore) {
-                dealerWins++;
-                return 'Dealer wins';
-            }
+            if (playerScore > 21) return 'Dealer wins (Player busted)';
+            if (dealerScore > 21) return 'Player wins (Dealer busted)';
+            if (playerScore > dealerScore) return 'Player wins';
+            if (playerScore < dealerScore) return 'Dealer wins';
             return 'Draw';
         }
 
-        function endGame(result) {
-            recordGame(result);
-            document.getElementById('actionButtons').style.display = 'none';
-
-            if (currentRound >= maxRounds) {
-                const finalMessage = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
-                document.getElementById('endGameMessage').innerHTML = `
-                    <h3>${finalMessage}</h3>
-                    <button onclick="resetGame()">Restart Game</button>
-                `;
-                document.getElementById('endGameMessage').style.display = 'block';
-            } else {
-                currentRound++;
-                document.getElementById('startRound').style.display = 'block';
+        // 结束当前轮
+        function endRound(result) {
+            currentRound++;
+            document.getElementById('statusMessage').innerText = result;
+            document.getElementById('recordList').innerHTML += `<li>Round ${currentRound}: ${result}</li>`;
+            if (currentRound > maxRounds) {
+                endGame();
             }
         }
 
-        function recordGame(result) {
-            const playerName = document.getElementById('playerName').value || 'Player';
-            const playerCards = playerHand.map(card => `${card.value}${card.suit}`).join(', ');
-            const dealerCards = dealerHand.map(card => `${card.value}${card.suit}`).join(', ');
-            records.push({
-                round: currentRound,
-                playerName,
-                playerCards,
-                dealerCards,
-                result
-            });
-            updateRecordList();
+        // 游戏结束
+        function endGame() {
+            alert(`Game Over! Player Wins: ${playerScore}, Dealer Wins: ${dealerScore}`);
+            resetGame();
         }
 
-        function updateRecordList() {
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = records.map(record => `
-                Round ${record.round}: ${record.playerName} drew [${record.playerCards}], Dealer drew [${record.dealerCards}], Result: ${record.result}
-            `).join('<br>');
-        }
-
+        // 重置游戏
         function resetGame() {
             currentRound = 1;
-            playerWins = 0;
-            dealerWins = 0;
-            records = [];
+            playerHand = [];
+            dealerHand = [];
+            deck = [];
+            playerScore = 0;
+            dealerScore = 0;
             document.getElementById('recordList').innerHTML = '';
-            document.getElementById('playerName').disabled = false;
-            document.getElementById('playerName').value = '';
-            document.getElementById('welcomeMessage').style.display = 'none';
-            document.getElementById('nameInputContainer').style.display = 'block';
-            document.getElementById('endGameMessage').style.display = 'none';
-            document.getElementById('startRound').style.display = 'block';
+            document.getElementById('statusMessage').innerText = '';
+            startGame();
         }
-
-        createDeck();
     </script>
 </body>
 </html>
