@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>21 Point Game with GIF Background</title>
     <style>
-        /* 设置默认的 GIF 背景 */
+        /* 默认 GIF 背景 */
         body {
             background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif');
             background-size: cover;
@@ -117,7 +117,7 @@
             }
         }
 
-        // 21 点游戏逻辑
+        // 游戏逻辑
         const suits = ['♠', '♥', '♣', '♦'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let deck = [];
@@ -154,50 +154,83 @@
             return score;
         }
 
+        function isDoubleAce(hand) {
+            return hand.length === 2 && hand[0].value === 'A' && hand[1].value === 'A';
+        }
+
+        function isBlackjack(hand) {
+            return hand.length === 2 && ((hand[0].value === 'A' && isTenCard(hand[1])) || (hand[1].value === 'A' && isTenCard(hand[0])));
+        }
+
+        function isTenCard(card) {
+            return ['10', 'J', 'Q', 'K'].includes(card.value);
+        }
+
+        function isPair(hand) {
+            return hand.length === 2 && hand[0].value === hand[1].value;
+        }
+
+        function determineWinner() {
+            const playerScore = calculateScore(playerHand);
+            const dealerScore = calculateScore(dealerHand);
+
+            // 5 龙规则
+            if (playerHand.length === 5 && playerScore <= 21) return "Player wins (Five Dragon Rule)";
+            if (dealerHand.length === 5 && dealerScore <= 21) return "Dealer wins (Five Dragon Rule)";
+
+            // A+A 规则
+            if (isDoubleAce(playerHand)) return isDoubleAce(dealerHand) ? "Draw (Double Ace Rule)" : "Player wins (Double Ace Rule)";
+            if (isDoubleAce(dealerHand)) return "Dealer wins (Double Ace Rule)";
+
+            // 黑杰克规则
+            if (isBlackjack(playerHand)) return isBlackjack(dealerHand) ? "Draw (Blackjack Rule)" : "Player wins (Blackjack Rule)";
+            if (isBlackjack(dealerHand)) return "Dealer wins (Blackjack Rule)";
+
+            // 普通对子
+            if (isPair(playerHand)) return isPair(dealerHand) ? "Draw (Pair Rule)" : "Player wins (Pair Rule)";
+            if (isPair(dealerHand)) return "Dealer wins (Pair Rule)";
+
+            // 爆牌
+            if (playerScore > 21) return "Player busted, Dealer wins";
+            if (dealerScore > 21) return "Dealer busted, Player wins";
+
+            // 比较分数
+            return playerScore > dealerScore ? "Player wins" : playerScore < dealerScore ? "Dealer wins" : "Draw";
+        }
+
         function renderHand(hand, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            for (let card of hand) {
+            hand.forEach(card => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card';
                 cardDiv.textContent = `${card.value}${card.suit}`;
                 container.appendChild(cardDiv);
-            }
+            });
         }
 
         function hit() {
             playerHand.push(deck.pop());
             renderHand(playerHand, 'playerCards');
             document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
-            if (calculateScore(playerHand) > 21) {
-                alert('You busted! Dealer wins.');
+            if (calculateScore(playerHand) > 21 || playerHand.length === 5) {
+                alert(determineWinner());
                 resetGame();
             }
         }
 
         function stand() {
-            while (calculateScore(dealerHand) < 17) {
-                dealerHand.push(deck.pop());
-            }
+            while (calculateScore(dealerHand) < 17) dealerHand.push(deck.pop());
             renderHand(dealerHand, 'dealerCards');
             document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
-            const playerScore = calculateScore(playerHand);
-            const dealerScore = calculateScore(dealerHand);
-
-            if (dealerScore > 21 || playerScore > dealerScore) {
-                alert('You win!');
-            } else if (playerScore < dealerScore) {
-                alert('Dealer wins!');
-            } else {
-                alert("It's a tie!");
-            }
+            alert(determineWinner());
             resetGame();
         }
 
         function resetGame() {
             createDeck();
             playerHand = [deck.pop(), deck.pop()];
-            dealerHand = [deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
             renderHand(playerHand, 'playerCards');
             renderHand(dealerHand, 'dealerCards');
             document.getElementById('playerScore').textContent = `Player Score: ${calculateScore(playerHand)}`;
