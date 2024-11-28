@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>21 Point Game - Enhanced</title>
     <style>
-        /* 背景和基本样式 */
         body {
             background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHloZTE5ODNxd2g4MjZiMHJ4OG1xYzZ6dnRoOXRuc2J5emM5czE1YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xytwrhaA1JSbBtgxew/giphy.gif');
             background-size: cover;
@@ -46,26 +45,6 @@
             font-weight: bold;
             border-radius: 4px;
             box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.5);
-            transform: scale(1);
-            transition: transform 0.3s ease-in-out, opacity 0.5s ease;
-        }
-
-        .card.flipped {
-            animation: flip 0.6s forwards;
-        }
-
-        @keyframes flip {
-            0% {
-                transform: perspective(400px) rotateY(0deg);
-            }
-            50% {
-                transform: perspective(400px) rotateY(90deg);
-                background: #333;
-                color: white;
-            }
-            100% {
-                transform: perspective(400px) rotateY(180deg);
-            }
         }
 
         button {
@@ -111,29 +90,6 @@
             line-height: 1.6;
             text-align: center;
         }
-
-        .achievement-popup {
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            font-size: 20px;
-            display: none;
-        }
-
-        @keyframes fade-in {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
     </style>
 </head>
 <body>
@@ -171,9 +127,6 @@
 
     <div id="endGameMessage" class="end-game-message" style="display: none;"></div>
 
-    <!-- 成就提示 -->
-    <div id="achievementPopup" class="achievement-popup"></div>
-
     <script>
         const suits = ['♠', '♥', '♣', '♦'];
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -185,11 +138,6 @@
         let dealerWins = 0;
         let currentRound = 1;
         const maxRounds = 5;
-        let achievements = {
-            firstWin: false,
-            fiveDragonsMaster: 0,
-            perfect21: false
-        };
 
         function createDeck() {
             deck = [];
@@ -203,7 +151,8 @@
 
         function startRound() {
             if (currentRound > maxRounds) {
-                endGameSummary();
+                alert(`Game Over! Final Results: Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`);
+                resetGame();
                 return;
             }
 
@@ -228,6 +177,45 @@
             document.getElementById('actionButtons').style.display = 'block';
         }
 
+        function calculateScore(hand) {
+            let score = 0;
+            let aces = 0;
+            for (let card of hand) {
+                if (card.value === 'A') {
+                    score += 11;
+                    aces++;
+                } else if (['J', 'Q', 'K'].includes(card.value)) {
+                    score += 10;
+                } else {
+                    score += parseInt(card.value);
+                }
+            }
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces--;
+            }
+            return score;
+        }
+
+        function hit() {
+            playerHand.push(deck.pop());
+            renderHand(playerHand, 'playerCards');
+            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
+            if (calculateScore(playerHand) > 21) {
+                endGame('Dealer wins (Player busted)');
+            }
+        }
+
+        function stand() {
+            while (calculateScore(dealerHand) < 17) {
+                dealerHand.push(deck.pop());
+            }
+            renderDealerHand(false);
+            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
+            const winner = determineWinner();
+            endGame(winner);
+        }
+
         function renderDealerHand(hidden = true) {
             const dealerHandContainer = document.getElementById('dealerCards');
             dealerHandContainer.innerHTML = '';
@@ -250,119 +238,96 @@
             });
         }
 
-        function hit() {
-            playerHand.push(deck.pop());
-            renderHand(playerHand, 'playerCards');
-            document.getElementById('playerScore').textContent = `Your Score: ${calculateScore(playerHand)}`;
-            if (calculateScore(playerHand) > 21) {
-                endRound('Dealer wins (Player busted)');
-            }
-        }
-
-        function stand() {
-            while (calculateScore(dealerHand) < 17) {
-                dealerHand.push(deck.pop());
-            }
-            renderDealerHand(false);
-            document.getElementById('dealerScore').textContent = `Dealer Score: ${calculateScore(dealerHand)}`;
-            endRound(determineWinner());
-        }
-
         function determineWinner() {
             const playerScore = calculateScore(playerHand);
             const dealerScore = calculateScore(dealerHand);
 
-            if (playerHand.length === 5 && playerScore <= 21) {
-                return 'Player wins with Five Dragon rule!';
-            }
-            if (dealerHand.length === 5 && dealerScore <= 21) {
-                return 'Dealer wins with Five Dragon rule!';
-            }
-
+            if (playerHand.length === 5 && playerScore <= 21) return 'Player wins with Five Dragon rule!';
+            if (dealerHand.length === 5 && dealerScore <= 21) return 'Dealer wins with Five Dragon rule!';
             if (playerScore > 21) {
+                dealerWins++;
                 return 'Dealer wins (Player busted)';
             }
             if (dealerScore > 21) {
+                playerWins++;
                 return 'Player wins (Dealer busted)';
             }
-
             if (playerScore > dealerScore) {
+                playerWins++;
                 return 'Player wins';
             }
             if (playerScore < dealerScore) {
+                dealerWins++;
                 return 'Dealer wins';
             }
-
             return 'Draw';
         }
 
-        function endRound(result) {
+        function endGame(result) {
             recordGame(result);
-            currentRound++;
-            if (currentRound > maxRounds) {
-                endGameSummary();
+            document.getElementById('actionButtons').style.display = 'none';
+
+            if (currentRound >= maxRounds) {
+                showRandomBonus(); // 在第5局显示随机提示
+                const finalMessage = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
+                document.getElementById('endGameMessage').innerHTML = `
+                    <h3>${finalMessage}</h3>
+                    <button onclick="resetGame()">Restart Game</button>
+                `;
+                document.getElementById('endGameMessage').style.display = 'block';
             } else {
+                currentRound++;
                 document.getElementById('startRound').style.display = 'block';
-                document.getElementById('actionButtons').style.display = 'none';
             }
         }
 
         function recordGame(result) {
             const playerName = document.getElementById('playerName').value || 'Player';
-            const currentTime = new Date().toISOString().replace('T', ' ').split('.')[0];
             const playerCards = playerHand.map(card => `${card.value}${card.suit}`).join(', ');
             const dealerCards = dealerHand.map(card => `${card.value}${card.suit}`).join(', ');
-            const playerScore = calculateScore(playerHand);
-            const dealerScore = calculateScore(dealerHand);
-
             records.push({
                 round: currentRound,
-                time: currentTime,
                 playerName,
                 playerCards,
-                playerScore,
                 dealerCards,
-                dealerScore,
-                result,
+                result
             });
-
             updateRecordList();
         }
 
         function updateRecordList() {
             const recordList = document.getElementById('recordList');
-            recordList.innerHTML = records
-                .map(
-                    record =>
-                        `Round ${record.round}: ${record.playerName} drew [${record.playerCards}], scored ${record.playerScore} (${record.result}); Dealer drew [${record.dealerCards}], scored ${record.dealerScore}`
-                )
-                .join('<br>');
+            recordList.innerHTML = records.map(record => `
+                Round ${record.round}: ${record.playerName} drew [${record.playerCards}], Dealer drew [${record.dealerCards}], Result: ${record.result}
+            `).join('<br>');
         }
 
-        function endGameSummary() {
-            document.getElementById('endGameMessage').innerHTML = `Game Over! Player Wins: ${playerWins}, Dealer Wins: ${dealerWins}`;
-            document.getElementById('endGameMessage').style.display = 'block';
+        function showRandomBonus() {
+            const random = Math.random();
+            if (random < 0.3) {
+                alert("Claim Welcome Bonus 60%");
+            } else if (random < 0.5) {
+                alert("Free Credit Bonus 8.88");
+            } else {
+                alert("Free Credit Bonus 3");
+            }
         }
 
-        function calculateScore(hand) {
-            let score = 0;
-            let aces = 0;
-            for (let card of hand) {
-                if (card.value === 'A') {
-                    score += 11;
-                    aces++;
-                } else if (['J', 'Q', 'K'].includes(card.value)) {
-                    score += 10;
-                } else {
-                    score += parseInt(card.value);
-                }
-            }
-            while (score > 21 && aces > 0) {
-                score -= 10;
-                aces--;
-            }
-            return score;
+        function resetGame() {
+            currentRound = 1;
+            playerWins = 0;
+            dealerWins = 0;
+            records = [];
+            document.getElementById('recordList').innerHTML = '';
+            document.getElementById('playerName').disabled = false;
+            document.getElementById('playerName').value = '';
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('nameInputContainer').style.display = 'block';
+            document.getElementById('endGameMessage').style.display = 'none';
+            document.getElementById('startRound').style.display = 'block';
         }
+
+        createDeck();
     </script>
 </body>
 </html>
